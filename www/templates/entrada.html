@@ -1,0 +1,17 @@
+<ion-view style="" title="Entrada">
+    <ion-content class="has-header" padding="true">
+      <div class="list card">
+        <div class="item" style="text-align:center;">
+          <h2>{{entrada.fecha}}</h2>
+          {{entrada.alumno}}
+        </div>
+
+        <div class="item item-body">
+          <p>Profesor: {{entrada.profesor}} años</p>
+          <p>Tareas: {{entrada.tareas}} grado/año</p>
+          <p>Observaciones: {{entrada.observaciones}}</p>
+        </div>
+        <a class="button button-assertive button-clear" ng-click="delete()">Eliminar</a>
+      </div>
+    </ion-content>
+</ion-view>

@@ -1,0 +1,49 @@
+<ion-view title="Alumnos" style="">
+    <ion-nav-buttons side="secondary">
+      <button class="button button-icon icon ion-ios-compose" ng-click="openModal()"></button>
+    </ion-nav-buttons>
+    <ion-content padding="true" class="has-header">
+        <ion-list>
+            <label class="item item-input" style="">
+                <i class="icon ion-search placeholder-icon"></i>
+                <input placeholder="" type="search" ng-model="search">
+            </label>
+            <ion-item class="item-avatar" style="" ng-repeat = "alumno in alumnos | filter :search track by $index " ng-click = "goTo(alumno.id)">
+                <h2>Nombre: {{alumno.nombre}}</h2>
+                <p>Fecha de Ingreso: {{alumno.entra| date:'dd/MM/yyyy'}}</p>
+                <p>Edad: {{alumno.edad}} años</p>
+                <p>Año: {{alumno.escolar}} grado/año</p>
+            </ion-item>
+        </ion-list>
+    </ion-content>
+</ion-view>
+<script id="nuevoAlumno.html" type="text/ng-template">
+  <ion-modal-view>
+    <ion-header-bar class="bar-energized">
+      <button class="button button-icon icon ion-android-cancel" ng-click="closeModal()"></button>
+      <h1 class="title">Agregar Alumno</h1>
+    </ion-header-bar>
+    <ion-content>
+      <form class="list">
+          <label class="item item-input item-floating-label">
+              <span class="input-label">Nombre</span>
+              <input placeholder="Nombre" type="text" ng-model="form.nombre">
+          </label>
+          <label class="item item-input item-floating-label">
+              <span class="input-label">Fecha de Ingreso</span>
+              <input placeholder="Fecha de Ingreso" type="date" ng-model="form.entra">
+          </label>
+          <label class="item item-input item-floating-label">
+              <span class="input-label">Edad</span>
+              <input placeholder="Edad" type="number" ng-model="form.edad">
+          </label>
+          <label class="item item-input item-floating-label">
+              <span class="input-label">Año Escolar</span>
+              <input placeholder="Año Escolar" type="number" ng-model="form.escolar">
+          </label>
+          <button class="button button-energized  button-block button-outline" ng-click="save()">Agregar</button>
+          {{form}}
+      </form>
+    </ion-content>
+  </ion-modal-view>
+</script>

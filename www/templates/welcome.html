@@ -1,0 +1,23 @@
+<ion-view title="Login" hide-nav-bar="true" hide-back-button="true" style="background-image: url('img/login1.jpg')">
+  <ion-content scroll="false" class="row row-center">
+    <div class="card" style="width:100%;">
+      <label class="item item-input item-stacked-label" style="border-style: none;">
+          <span class="input-label">Email</span>
+          <input placeholder="Email" type="email" ng-model="user.mail">
+      </label>
+      <label class="item item-input item-stacked-label" style="border-style: none;">
+        <span class="input-label">Password</span>
+        <input placeholder="Contraseña" type="password" ng-model="user.pass">
+      </label>
+      <button class="button button-block button-clear button-energized" ng-click="logMeIn()">
+        Ingresar
+      </button>
+      <!-- <hr style="color:energized">
+      <div class="row">
+        <button class="button button-block button-clear button-positive icon ion-social-facebook col" ng-click="googleSignIn('facebook')"></button>
+        <button class="button button-block button-clear button-calm icon ion-social-twitter col" ng-click="googleSignIn('twitter')"></button>
+        <button class="button button-block button-clear button-assertive icon ion-social-google col" ng-click="googleSignIn('google')"></button>
+      </div> -->
+    </div>
+  </ion-content>
+</ion-view>
