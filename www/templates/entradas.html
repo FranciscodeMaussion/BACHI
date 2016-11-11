@@ -10,7 +10,7 @@
             </label>
             <ion-item ng-repeat = "entrada in entradas | filter :search track by $index ">
                 <h2>{{entrada.fecha| date:'dd/MM/yyyy'}}</h2>
-                <p>{{entrada.profesor}}</p>
+                <p>{{profesores.$getRecord(entrada.profesor).nombre}}</p>
             </ion-item>
         </ion-list>
     </ion-content>
@@ -29,7 +29,7 @@
           </label>
           <label class="item item-select">
             <span class="input-label">Profesor</span>
-            <select ng-options="profesor.nombre for profesor in profesores track by profesor.id" ng-model="form.profesor"></select>
+            <select ng-options="profesor.nombre for profesor in profesores track by profesor.$id" ng-model="form.profesor"></select>
           </label>
           <label class="item item-input item-floating-label">
               <span class="input-label">Tareas</span>

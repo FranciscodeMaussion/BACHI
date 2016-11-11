@@ -8,7 +8,7 @@
                 <i class="icon ion-search placeholder-icon"></i>
                 <input placeholder="" type="search" ng-model="search">
             </label>
-            <ion-item class="item-avatar" style="" ng-repeat = "alumno in alumnos | filter :search track by $index " ng-click = "goTo(alumno.id)">
+            <ion-item class="item-avatar" style="" ng-repeat = "alumno in alumnos | filter :search track by $index " ng-click = "goTo(alumno.$id)">
                 <h2>Nombre: {{alumno.nombre}}</h2>
                 <p>Fecha de Ingreso: {{alumno.entra| date:'dd/MM/yyyy'}}</p>
                 <p>Edad: {{alumno.edad}} años</p>

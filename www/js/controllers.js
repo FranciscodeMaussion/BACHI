@@ -36,12 +36,22 @@ angular.module('app.controllers', ['firebase'])
     });
   }
 })
+.factory("alumnos", ["$firebaseArray",
+  function($firebaseArray) {
+    // create a reference to the database location where we will store our data
+    var ref = firebase.database().ref().child('alumnos');
 
-.controller('alumnosCtrl', ['$scope', '$stateParams', '$ionicModal', '$state', 'Auth', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+    // this uses AngularFire to create the synchronized array
+    return $firebaseArray(ref);
+  }
+])
+.controller('alumnosCtrl', ['$scope', '$stateParams', '$ionicModal', '$state', 'Auth', 'alumnos', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $ionicModal, $state, Auth) {
+function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos) {
     $scope.firebaseUser= Auth.$getAuth();
+    $scope.alumnos = alumnos;
+    console.log($scope.alumnos);
     $ionicModal.fromTemplateUrl('nuevoAlumno.html', {
       scope: $scope,
       animation: 'slide-in-up'
@@ -59,24 +69,15 @@ function ($scope, $stateParams, $ionicModal, $state, Auth) {
       $state.go('tabsController.entradas', {idAlumno: idAlumno});
     };
     $scope.form = {
-      'id':0,
       'nombre':'',
       'entra':new Date(),
       'edad':0,
       'escolar':0,
     };
-    var aux = window.localStorage.getItem("alumnos");
-    if( aux != null){
-      $scope.alumnos = JSON.parse(aux);
-      $scope.form.id = aux[aux.length-1].id+1;
-    }else{
-      $scope.alumnos = [];
-    }
     $scope.save = function(){
-      $scope.alumnos.push($scope.form);
-      window.localStorage.setItem("alumnos", JSON.stringify($scope.alumnos));
+      $scope.form.entra = $scope.form.entra.toJSON();
+      $scope.alumnos.$add($scope.form);
       $scope.form = {
-        'id':0,
         'nombre':'',
         'entra':new Date(),
         'edad':0,
@@ -84,11 +85,20 @@ function ($scope, $stateParams, $ionicModal, $state, Auth) {
       };
     };
 }])
+.factory("profesores", ["$firebaseArray",
+  function($firebaseArray) {
+    // create a reference to the database location where we will store our data
+    var ref = firebase.database().ref().child('profesores');
 
-.controller('profesoresCtrl', ['$scope', '$stateParams', '$ionicModal',// The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+    // this uses AngularFire to create the synchronized array
+    return $firebaseArray(ref);
+  }
+])
+.controller('profesoresCtrl', ['$scope', '$stateParams', '$ionicModal', 'profesores', 'Auth',// The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $ionicModal) {
+function ($scope, $stateParams, $ionicModal, profesores, Auth) {
+    $scope.profesores = profesores;
     $ionicModal.fromTemplateUrl('nuevoProfesor.html', {
       scope: $scope,
       animation: 'slide-in-up'
@@ -102,42 +112,50 @@ function ($scope, $stateParams, $ionicModal) {
       $scope.modal.hide();
     };
     $scope.form = {
-      'id':0,
       'nombre':'',
       'entra':new Date(),
       'edad':0,
       'telefono':0,
+      'email':'@gmail.com',
     };
-    var aux = window.localStorage.getItem("profesores");
-    if( aux != null){
-      $scope.profesores = JSON.parse(aux);
-      $scope.form.id = aux[aux.length-1].id+1;
-    }else{
-      $scope.profesores = [];
-    }
+    $scope.password = "6caracteres";
     $scope.save = function(){
-      $scope.profesores.push($scope.form);
-      window.localStorage.setItem("profesores", JSON.stringify($scope.profesores));
+      $scope.message = null;
+      $scope.form.entra = $scope.form.entra.toJSON();
+      // Create a new user
+      Auth.$createUserWithEmailAndPassword($scope.form.email, $scope.password)
+      .then(function(firebaseUser) {
+        $scope.message = "User created with uid: " + firebaseUser.uid;
+        $scope.profesores.$add($scope.form);
+        console.log($scope.message);
+      }).catch(function(error) {
+        $scope.message = error;
+        console.log($scope.message);
+      });
       $scope.form = {
-        'id':0,
         'nombre':'',
         'entra':new Date(),
         'edad':0,
         'telefono':0,
+        'email':'@gmail.com',
       };
+      $scope.password = "6caracteres";
     };
 }])
 
 .controller('cuentaCtrl', ['$scope', 'Auth',
 function ($scope, Auth) {
   $scope.firebaseUser= Auth.$getAuth();
-  alert(JSON.stringify($scope.firebaseUser));
 }])
 
-.controller('entradasCtrl', ['$scope', '$stateParams', '$ionicModal', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+.controller('entradasCtrl', ['$scope', '$stateParams', '$ionicModal', 'Auth', '$firebaseArray', 'profesores', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $ionicModal) {
+function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores) {
+    $scope.firebaseUser= Auth.$getAuth();
+    var ref = firebase.database().ref().child('entradas/'+$stateParams.idAlumno);
+    $scope.entradas = $firebaseArray(ref);
+    $scope.profesores = profesores;
     $ionicModal.fromTemplateUrl('nuevaEntrada.html', {
       scope: $scope,
       animation: 'slide-in-up'
@@ -151,35 +169,17 @@ function ($scope, $stateParams, $ionicModal) {
       $scope.modal.hide();
     };
     $scope.form = {
-      'id':0,
-      'alumno':$stateParams.idAlumno,
       'fecha':new Date(),
       'profesor':'',
       'tareas':'',
       'observaciones':'',
     };
-    var aux = window.localStorage.getItem("profesores");
-    if( aux != null){
-      $scope.profesores = JSON.parse(aux);
-    }else{
-      $scope.profesores = [];
-    }
-    aux = window.localStorage.getItem("entradas");
-    if( aux != null){
-      $scope.entradasServ = JSON.parse(aux);
-      $scope.form.id = aux[aux.length-1].id+1;
-    }else{
-      $scope.entradasServ = [];
-    }
-    $scope.entradas = $scope.entradasServ.filter(function (items) {return items.id == $stateParams.idAlumno;});
     $scope.save = function(){
+      $scope.form.fecha = $scope.form.fecha.toJSON();
       var sentHelper = $scope.form;
-      sentHelper.profesor = $scope.form.profesor.id;
-      $scope.entradasServ.push(sentHelper);
-      window.localStorage.setItem("profesores", JSON.stringify($scope.entradasServ));
+      sentHelper.profesor = $scope.form.profesor.$id;
+      $scope.entradas.$add(sentHelper);
       $scope.form = {
-        'id':0,
-        'alumno':$stateParams.idAlumno,
         'fecha':new Date(),
         'profesor':'',
         'tareas':'',
@@ -189,6 +189,8 @@ function ($scope, $stateParams, $ionicModal) {
 }])
 
 .controller('alumnoCtrl', ['$scope', '$stateParams', '$state', '$ionicHistory', '$ionicModal', function ($scope, $stateParams, $ionicModal, $state, $ionicHistory) {
+  var ref = firebase.database().ref().child('alumnos').child($stateParams.itemId);
+  console.log(ref);
   var aux = JSON.parse(window.localStorage.getItem("alumnos"));
   $scope.alumno = aux.filter(function (items) {return items.id == $stateParams.itemId;})[0];
 
