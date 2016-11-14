@@ -118,28 +118,37 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
       'telefono':0,
       'email':'@gmail.com',
     };
-    $scope.password = "6caracteres";
+    $scope.helper = {'password':''};
     $scope.save = function(){
       $scope.message = null;
       $scope.form.entra = $scope.form.entra.toJSON();
       // Create a new user
-      Auth.$createUserWithEmailAndPassword($scope.form.email, $scope.password)
+      console.log($scope.helper.password);
+      Auth.$createUserWithEmailAndPassword($scope.form.email, $scope.helper.password)
       .then(function(firebaseUser) {
         $scope.message = "User created with uid: " + firebaseUser.uid;
         $scope.profesores.$add($scope.form);
+        $scope.form = {
+          'nombre':'',
+          'entra':new Date(),
+          'edad':0,
+          'telefono':0,
+          'email':'@gmail.com',
+        };
+        $scope.helper = {'password':''};
         console.log($scope.message);
       }).catch(function(error) {
         $scope.message = error;
         console.log($scope.message);
+        $scope.form = {
+          'nombre':'',
+          'entra':new Date(),
+          'edad':0,
+          'telefono':0,
+          'email':'@gmail.com',
+        };
+        $scope.helper = {'password':''};
       });
-      $scope.form = {
-        'nombre':'',
-        'entra':new Date(),
-        'edad':0,
-        'telefono':0,
-        'email':'@gmail.com',
-      };
-      $scope.password = "6caracteres";
     };
 }])
 
