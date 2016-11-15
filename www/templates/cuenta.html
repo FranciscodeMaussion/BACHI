@@ -1,10 +1,25 @@
 <ion-view title="Cuenta" style="">
     <ion-content padding="true" class="has-header">
       <div class="details">
-        <img ng-if="firebaseUser.photoURL != null" src="{{ firebaseUser.photoURL }}" width="100" height="100"/>
-        <img ng-if="firebaseUser.photoURL == null" src="img/ionic.png" width="100" height="100"/>
-        <h4>{{ firebaseUser.displayName }}</h4>
-        <p>{{ firebaseUser.email }}</p>
+        <div class="card" ng-repeat = "profesor in profesores" ng-if="profesor.uid_fire == firebaseUser.uid">
+          <h4  style="text-align:center;">{{ profesor.nombre }}</h4>
+          <br>
+          <hr>
+          <br>
+          <p> Email: {{ profesor.email }}</p>
+          <p> Edad: {{ profesor.edad }}</p>
+          <p> Telefono: {{ profesor.telefono }}</p>
+          <br>
+          <hr>
+          <div class="row">
+            <button class="button col button-clear button-assertive" ng-click="logMeOut()">
+              Salir
+            </button>
+            <button class="button col button-clear button-balanced" ng-click="changePass(profesor.email)">
+              Cambiar Contraseña
+            </button>
+          </div>
+        </div>
       </div>
     </ion-content>
 </ion-view>

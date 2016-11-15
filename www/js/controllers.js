@@ -1,6 +1,6 @@
 angular.module('app.controllers', ['firebase'])
 
-.controller("welcomeCtrl", function($scope, $firebaseAuth, $state, Auth) {
+.controller("welcomeCtrl", function($scope, $firebaseAuth, $state, Auth, $cordovaToast) {
   // $scope.googleSignIn = function(where){
   //   var auth = $firebaseAuth();
   //   // login
@@ -23,6 +23,11 @@ angular.module('app.controllers', ['firebase'])
   $scope.logMeIn = function(){
     Auth.$signInWithEmailAndPassword($scope.user.mail, $scope.user.pass).then(function(firebaseUser) {
       console.log("Signed in as:", JSON.stringify(firebaseUser.uid));
+      $cordovaToast.showLongBottom('Se logueo correctamente.').then(function(success) {
+        // success
+      }, function (error) {
+        // error
+      });
       $scope.user = {
         'mail':'',
         'pass':''
@@ -32,7 +37,21 @@ angular.module('app.controllers', ['firebase'])
       });
       $state.go('tabsController.alumnos');
     }).catch(function(error) {
-      alert("Authentication failed:", JSON.stringify(error));
+      console.log(error);
+      if (error.code == 'auth/user-not-found'){
+        $cordovaToast.showLongBottom('El mail no pertenece a ningun usuario.').then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
+      }
+      if (error.code == 'auth/wrong-password'){
+        $cordovaToast.showLongBottom('Contraseña incorrecta.').then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
+      }
     });
   }
 })
@@ -77,6 +96,11 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos) {
     $scope.save = function(){
       $scope.form.entra = $scope.form.entra.toJSON();
       $scope.alumnos.$add($scope.form);
+      $cordovaToast.showLongBottom('Se creó el alumno correctamente.').then(function(success) {
+        // success
+      }, function (error) {
+        // error
+      });
       $scope.form = {
         'nombre':'',
         'entra':new Date(),
@@ -117,6 +141,7 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
       'edad':0,
       'telefono':0,
       'email':'@gmail.com',
+      'uid_fire':'',
     };
     $scope.helper = {'password':''};
     $scope.save = function(){
@@ -127,6 +152,12 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
       Auth.$createUserWithEmailAndPassword($scope.form.email, $scope.helper.password)
       .then(function(firebaseUser) {
         $scope.message = "User created with uid: " + firebaseUser.uid;
+        $cordovaToast.showLongBottom('Se creó el profesor correctamente.').then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
+        $scope.form.uid_fire = firebaseUser.uid;
         $scope.profesores.$add($scope.form);
         $scope.form = {
           'nombre':'',
@@ -134,6 +165,7 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
           'edad':0,
           'telefono':0,
           'email':'@gmail.com',
+          'uid_fire':'',
         };
         $scope.helper = {'password':''};
         console.log($scope.message);
@@ -146,15 +178,33 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
           'edad':0,
           'telefono':0,
           'email':'@gmail.com',
+          'uid_fire':'',
         };
         $scope.helper = {'password':''};
       });
     };
 }])
 
-.controller('cuentaCtrl', ['$scope', 'Auth',
-function ($scope, Auth) {
+.controller('cuentaCtrl', ['$scope', 'Auth', 'profesores', '$state',
+function ($scope, Auth, profesores, $state) {
+  $scope.profesores = profesores;
   $scope.firebaseUser= Auth.$getAuth();
+  $scope.logMeOut = function(){
+    Auth.$signOut();
+    document.location.href = 'index.html';
+  }
+  $scope.changePass = function(mail){
+    Auth.$sendPasswordResetEmail(mail).then(function() {
+      console.log("Password reset email sent successfully!");
+      $cordovaToast.showLongBottom('Se envio un mail con link de restauración de contraseña.').then(function(success) {
+        // success
+      }, function (error) {
+        // error
+      });
+    }).catch(function(error) {
+      console.error("Error: ", error);
+    });
+  }
 }])
 
 .controller('entradasCtrl', ['$scope', '$stateParams', '$ionicModal', 'Auth', '$firebaseArray', 'profesores', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
@@ -188,6 +238,11 @@ function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores) {
       var sentHelper = $scope.form;
       sentHelper.profesor = $scope.form.profesor.$id;
       $scope.entradas.$add(sentHelper);
+      $cordovaToast.showLongBottom('Se creó la entrada correctamente.').then(function(success) {
+        // success
+      }, function (error) {
+        // error
+      });
       $scope.form = {
         'fecha':new Date(),
         'profesor':'',
