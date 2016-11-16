@@ -80,50 +80,50 @@ angular.module('app.routes', [])
     }
   })
 
-  .state('tabsController.alumno', {
-    url: '/alumno:itemId',
-    views: {
-      'alumnos': {
-        templateUrl: 'templates/alumno.html',
-        controller: 'alumnoCtrl',
-        resolve: {
-          "currentAuth": ["Auth", function(Auth) {
-            return Auth.$requireSignIn();
-          }]
-        }
-      }
-    }
-  })
-
-  .state('tabsController.profesor', {
-    url: '/profesor:itemId',
-    views: {
-      'profesores': {
-        templateUrl: 'templates/profesor.html',
-        controller: 'profesorCtrl',
-        resolve: {
-          "currentAuth": ["Auth", function(Auth) {
-            return Auth.$requireSignIn();
-          }]
-        }
-      }
-    }
-  })
-
-  .state('tabsController.entrada', {
-    url: '/entrada:itemId',
-    views: {
-      'alumnos': {
-        templateUrl: 'templates/entrada.html',
-        controller: 'entradaCtrl',
-        resolve: {
-          "currentAuth": ["Auth", function(Auth) {
-            return Auth.$requireSignIn();
-          }]
-        }
-      }
-    }
-  })
+  // .state('tabsController.alumno', {
+  //   url: '/alumno:itemId',
+  //   views: {
+  //     'alumnos': {
+  //       templateUrl: 'templates/alumno.html',
+  //       controller: 'alumnoCtrl',
+  //       resolve: {
+  //         "currentAuth": ["Auth", function(Auth) {
+  //           return Auth.$requireSignIn();
+  //         }]
+  //       }
+  //     }
+  //   }
+  // })
+  //
+  // .state('tabsController.profesor', {
+  //   url: '/profesor:itemId',
+  //   views: {
+  //     'profesores': {
+  //       templateUrl: 'templates/profesor.html',
+  //       controller: 'profesorCtrl',
+  //       resolve: {
+  //         "currentAuth": ["Auth", function(Auth) {
+  //           return Auth.$requireSignIn();
+  //         }]
+  //       }
+  //     }
+  //   }
+  // })
+  //
+  // .state('tabsController.entrada', {
+  //   url: '/entrada:itemId',
+  //   views: {
+  //     'alumnos': {
+  //       templateUrl: 'templates/entrada.html',
+  //       controller: 'entradaCtrl',
+  //       resolve: {
+  //         "currentAuth": ["Auth", function(Auth) {
+  //           return Auth.$requireSignIn();
+  //         }]
+  //       }
+  //     }
+  //   }
+  // })
 
 $urlRouterProvider.otherwise('/welcome')
 });

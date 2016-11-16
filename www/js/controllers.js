@@ -64,10 +64,10 @@ angular.module('app.controllers', ['firebase'])
     return $firebaseArray(ref);
   }
 ])
-.controller('alumnosCtrl', ['$scope', '$stateParams', '$ionicModal', '$state', 'Auth', 'alumnos', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+.controller('alumnosCtrl', ['$scope', '$stateParams', '$ionicModal', '$state', 'Auth', 'alumnos', '$cordovaToast', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos) {
+function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToast) {
     $scope.firebaseUser= Auth.$getAuth();
     $scope.alumnos = alumnos;
     console.log($scope.alumnos);
@@ -82,11 +82,41 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos) {
     };
     $scope.closeModal = function() {
       $scope.modal.hide();
+      $scope.form = {
+        'nombre':'',
+        'entra':new Date(),
+        'edad':0,
+        'escolar':0,
+      };
+      $scope.mod = false;
     };
     $scope.goTo = function(idAlumno){
       console.log(idAlumno);
       $state.go('tabsController.entradas', {idAlumno: idAlumno});
     };
+    $scope.editTo = function(idAlumno){
+      console.log(idAlumno);
+      var rec = $scope.alumnos.$getRecord(idAlumno);
+      $scope.form =rec;
+      $scope.mod = true;
+      $scope.modal.show();
+    };
+    $scope.deleteAlumno = function(idAlumno){
+      console.log(idAlumno);
+      var rec = $scope.alumnos.$getRecord(idAlumno);
+      $scope.alumnos.$remove(rec).then(function(resp) {
+        console.log(resp);
+        $cordovaToast.showLongBottom('Alumno eliminado correctamente').then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
+      })
+      .catch(function(error) {
+        console.log("Error:", error);
+      });
+    };
+    $scope.mod = false;
     $scope.form = {
       'nombre':'',
       'entra':new Date(),
@@ -94,19 +124,24 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos) {
       'escolar':0,
     };
     $scope.save = function(){
-      $scope.form.entra = $scope.form.entra.toJSON();
-      $scope.alumnos.$add($scope.form);
-      $cordovaToast.showLongBottom('Se creó el alumno correctamente.').then(function(success) {
-        // success
-      }, function (error) {
-        // error
-      });
-      $scope.form = {
-        'nombre':'',
-        'entra':new Date(),
-        'edad':0,
-        'escolar':0,
-      };
+      if($scope.mod){
+        $scope.form.entra = $scope.form.entra.toJSON();
+        $scope.alumnos.$save($scope.form);
+        $cordovaToast.showLongBottom('Se modifico el alumno '+ $scope.form.nombre +' correctamente.').then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
+      }else{
+        $scope.form.entra = $scope.form.entra.toJSON();
+        $scope.alumnos.$add($scope.form);
+        $cordovaToast.showLongBottom('Se creó el alumno correctamente.').then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
+      }
+      $scope.closeModal()
     };
 }])
 .factory("profesores", ["$firebaseArray",
@@ -134,6 +169,15 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
     };
     $scope.closeModal = function() {
       $scope.modal.hide();
+      $scope.form = {
+        'nombre':'',
+        'entra':new Date(),
+        'edad':0,
+        'telefono':0,
+        'email':'@gmail.com',
+        'uid_fire':'',
+      };
+      $scope.helper = {'password':''};
     };
     $scope.form = {
       'nombre':'',
@@ -159,28 +203,11 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
         });
         $scope.form.uid_fire = firebaseUser.uid;
         $scope.profesores.$add($scope.form);
-        $scope.form = {
-          'nombre':'',
-          'entra':new Date(),
-          'edad':0,
-          'telefono':0,
-          'email':'@gmail.com',
-          'uid_fire':'',
-        };
-        $scope.helper = {'password':''};
+        $scope.closeModal();
         console.log($scope.message);
       }).catch(function(error) {
         $scope.message = error;
         console.log($scope.message);
-        $scope.form = {
-          'nombre':'',
-          'entra':new Date(),
-          'edad':0,
-          'telefono':0,
-          'email':'@gmail.com',
-          'uid_fire':'',
-        };
-        $scope.helper = {'password':''};
       });
     };
 }])
@@ -226,6 +253,19 @@ function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores) {
     };
     $scope.closeModal = function() {
       $scope.modal.hide();
+      $scope.form = {
+        'fecha':new Date(),
+        'profesor':'',
+        'tareas':'',
+        'observaciones':'',
+      };
+      $scope.mod = false;
+    };
+    $scope.editTo = function(idEntrada){
+      var rec = $scope.entradas.$getRecord(idEntrada);
+      $scope.form =rec;
+      $scope.mod = true;
+      $scope.modal.show();
     };
     $scope.form = {
       'fecha':new Date(),
@@ -233,60 +273,67 @@ function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores) {
       'tareas':'',
       'observaciones':'',
     };
+    $scope.mod = false;
     $scope.save = function(){
-      $scope.form.fecha = $scope.form.fecha.toJSON();
-      var sentHelper = $scope.form;
-      sentHelper.profesor = $scope.form.profesor.$id;
-      $scope.entradas.$add(sentHelper);
-      $cordovaToast.showLongBottom('Se creó la entrada correctamente.').then(function(success) {
-        // success
-      }, function (error) {
-        // error
-      });
-      $scope.form = {
-        'fecha':new Date(),
-        'profesor':'',
-        'tareas':'',
-        'observaciones':'',
+      if($scope.mod){
+        $scope.form.fecha = $scope.form.fecha.toJSON();
+        $scope.form.profesor = $scope.form.profesor.$id;
+        $scope.entradas.$save($scope.form);
+        $cordovaToast.showLongBottom('Se modifico la entrada.').then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
+      }else{
+        $scope.form.fecha = $scope.form.fecha.toJSON();
+        var sentHelper = $scope.form;
+        sentHelper.profesor = $scope.form.profesor.$id;
+        $scope.entradas.$add(sentHelper);
+        $cordovaToast.showLongBottom('Se creó la entrada correctamente.').then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
       };
+      $scope.closeModal
     }
 }])
 
-.controller('alumnoCtrl', ['$scope', '$stateParams', '$state', '$ionicHistory', '$ionicModal', function ($scope, $stateParams, $ionicModal, $state, $ionicHistory) {
-  var ref = firebase.database().ref().child('alumnos').child($stateParams.itemId);
-  console.log(ref);
-  var aux = JSON.parse(window.localStorage.getItem("alumnos"));
-  $scope.alumno = aux.filter(function (items) {return items.id == $stateParams.itemId;})[0];
-
-  $scope.delete = function(){
-    var aux = $scope.aux.filter(function (item) {return item.id !== parseInt($stateParams.itemId);});
-    window.localStorage.setItem("alumnos", JSON.stringify(aux));
-    $ionicHistory.goBack();
-  }
-}])
-
-.controller('profesorCtrl', ['$scope', '$stateParams', '$state', '$ionicHistory', '$ionicModal', function ($scope, $stateParams, $ionicModal, $state, $ionicHistory) {
-  var aux = JSON.parse(window.localStorage.getItem("profesores"));
-  $scope.profesor = aux.filter(function (items) {return items.id == $stateParams.itemId;})[0];
-
-  $scope.delete = function(){
-    var aux = $scope.aux.filter(function (item) {return item.id !== parseInt($stateParams.itemId);});
-    window.localStorage.setItem("profesores", JSON.stringify(aux));
-    $ionicHistory.goBack();
-  }
-}])
-
-.controller('entradaCtrl', ['$scope', '$stateParams', '$state', '$ionicHistory', '$ionicModal', function ($scope, $stateParams, $ionicModal, $state, $ionicHistory) {
-  var aux = JSON.parse(window.localStorage.getItem("entradas"));
-  $scope.entrada = aux.filter(function (items) {return items.id == $stateParams.itemId;})[0];
-  aux = JSON.parse(window.localStorage.getItem("alumnos"));
-  $scope.entrada.alumno = aux.filter(function (items) {return items.id == $scope.entrada.alumno;})[0];
-  aux = JSON.parse(window.localStorage.getItem("profesores"));
-  $scope.entrada.profesor = aux.filter(function (items) {return items.id == $scope.entrada.profesor;})[0];
-
-  $scope.delete = function(){
-    var aux = $scope.aux.filter(function (item) {return item.id !== parseInt($stateParams.itemId);});
-    window.localStorage.setItem("entradas", JSON.stringify(aux));
-    $ionicHistory.goBack();
-  }
-}])
+// .controller('alumnoCtrl', ['$scope', '$stateParams', '$state', '$ionicHistory', '$ionicModal', function ($scope, $stateParams, $ionicModal, $state, $ionicHistory) {
+//   var ref = firebase.database().ref().child('alumnos').child($stateParams.itemId);
+//   console.log(ref);
+//   var aux = JSON.parse(window.localStorage.getItem("alumnos"));
+//   $scope.alumno = aux.filter(function (items) {return items.id == $stateParams.itemId;})[0];
+//
+//   $scope.delete = function(){
+//     var aux = $scope.aux.filter(function (item) {return item.id !== parseInt($stateParams.itemId);});
+//     window.localStorage.setItem("alumnos", JSON.stringify(aux));
+//     $ionicHistory.goBack();
+//   }
+// }])
+//
+// .controller('profesorCtrl', ['$scope', '$stateParams', '$state', '$ionicHistory', '$ionicModal', function ($scope, $stateParams, $ionicModal, $state, $ionicHistory) {
+//   var aux = JSON.parse(window.localStorage.getItem("profesores"));
+//   $scope.profesor = aux.filter(function (items) {return items.id == $stateParams.itemId;})[0];
+//
+//   $scope.delete = function(){
+//     var aux = $scope.aux.filter(function (item) {return item.id !== parseInt($stateParams.itemId);});
+//     window.localStorage.setItem("profesores", JSON.stringify(aux));
+//     $ionicHistory.goBack();
+//   }
+// }])
+//
+// .controller('entradaCtrl', ['$scope', '$stateParams', '$state', '$ionicHistory', '$ionicModal', function ($scope, $stateParams, $ionicModal, $state, $ionicHistory) {
+//   var aux = JSON.parse(window.localStorage.getItem("entradas"));
+//   $scope.entrada = aux.filter(function (items) {return items.id == $stateParams.itemId;})[0];
+//   aux = JSON.parse(window.localStorage.getItem("alumnos"));
+//   $scope.entrada.alumno = aux.filter(function (items) {return items.id == $scope.entrada.alumno;})[0];
+//   aux = JSON.parse(window.localStorage.getItem("profesores"));
+//   $scope.entrada.profesor = aux.filter(function (items) {return items.id == $scope.entrada.profesor;})[0];
+//
+//   $scope.delete = function(){
+//     var aux = $scope.aux.filter(function (item) {return item.id !== parseInt($stateParams.itemId);});
+//     window.localStorage.setItem("entradas", JSON.stringify(aux));
+//     $ionicHistory.goBack();
+//   }
+// }])
