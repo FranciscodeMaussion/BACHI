@@ -190,7 +190,6 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
     $scope.helper = {'password':''};
     $scope.save = function(){
       $scope.message = null;
-      $scope.form.entra = $scope.form.entra.toJSON();
       // Create a new user
       console.log($scope.helper.password);
       Auth.$createUserWithEmailAndPassword($scope.form.email, $scope.helper.password)
@@ -202,7 +201,9 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
           // error
         });
         $scope.form.uid_fire = firebaseUser.uid;
-        $scope.profesores.$add($scope.form);
+        var helper = $scope.form;
+        helper.entra = $scope.form.entra.toJSON();
+        $scope.profesores.$add(helper);
         $scope.closeModal();
         console.log($scope.message);
       }).catch(function(error) {
@@ -260,6 +261,21 @@ function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores) {
         'observaciones':'',
       };
       $scope.mod = false;
+    };
+    $scope.deleteAlumno = function(idEntrada){
+      console.log(idEntrada);
+      var rec = $scope.alumnos.$getRecord(idEntrada);
+      $scope.entradas.$remove(rec).then(function(resp) {
+        console.log(resp);
+        $cordovaToast.showLongBottom('Entrada eliminada correctamente').then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
+      })
+      .catch(function(error) {
+        console.log("Error:", error);
+      });
     };
     $scope.editTo = function(idEntrada){
       var rec = $scope.entradas.$getRecord(idEntrada);
