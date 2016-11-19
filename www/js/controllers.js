@@ -55,19 +55,9 @@ angular.module('app.controllers', ['firebase'])
     });
   }
 })
-.factory("alumnos", ["$firebaseArray",
-  function($firebaseArray) {
-    // create a reference to the database location where we will store our data
-    var ref = firebase.database().ref().child('alumnos');
 
-    // this uses AngularFire to create the synchronized array
-    return $firebaseArray(ref);
-  }
-])
-.controller('alumnosCtrl', ['$scope', '$stateParams', '$ionicModal', '$state', 'Auth', 'alumnos', '$cordovaToast', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
-// You can include any angular dependencies as parameters for this function
-// TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToast) {
+.controller('alumnosCtrl', ['$scope', '$stateParams', '$ionicModal', '$state', 'Auth', 'alumnos', '$cordovaToast', 'entradas',
+function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToast, entradas) {
     $scope.firebaseUser= Auth.$getAuth();
     $scope.alumnos = alumnos;
     console.log($scope.alumnos);
@@ -84,7 +74,7 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToas
       $scope.modal.hide();
       $scope.form = {
         'nombre':'',
-        'edad':0,
+        'fecha': new Date(),
         'escolar':0,
       };
       $scope.mod = false;
@@ -105,11 +95,19 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToas
       console.log(idAlumno);
       var rec = $scope.alumnos.$getRecord(idAlumno);
       $scope.alumnos.$remove(rec).then(function(resp) {
-        console.log(resp);
-        $cordovaToast.showLongBottom('Alumno eliminado correctamente').then(function(success) {
-          // success
-        }, function (error) {
-          // error
+        var entradasAll = entradas;
+        var entradasAlumno = entradasAll.$getRecord(idAlumno);
+        entradasAll.$remove(entradasAlumno).then(function(resp) {
+          //delete entradas
+          console.log(resp);
+          $cordovaToast.showLongBottom('Alumno eliminado correctamente').then(function(success) {
+            // success
+          }, function (error) {
+            // error
+          });
+        })
+        .catch(function(error) {
+          console.log("Error:", error);
         });
       })
       .catch(function(error) {
@@ -119,12 +117,13 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToas
     $scope.mod = false;
     $scope.form = {
       'nombre':'',
-      'edad':0,
+      'fecha': new Date(),
       'escolar':0,
     };
     $scope.save = function(){
       if($scope.mod){
         var helper = $scope.form
+        helper.fecha = helper.fecha.toJSON();
         $scope.alumnos.$save(helper);
         $cordovaToast.showLongBottom('Se modifico el alumno '+ helper.nombre +' correctamente.').then(function(success) {
           // success
@@ -133,6 +132,7 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToas
         });
       }else{
         var helper = $scope.form
+        helper.fecha = helper.fecha.toJSON();
         $scope.alumnos.$add(helper);
         $cordovaToast.showLongBottom('Se creó el alumno correctamente.').then(function(success) {
           // success
@@ -143,18 +143,8 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToas
       $scope.closeModal()
     };
 }])
-.factory("profesores", ["$firebaseArray",
-  function($firebaseArray) {
-    // create a reference to the database location where we will store our data
-    var ref = firebase.database().ref().child('profesores');
 
-    // this uses AngularFire to create the synchronized array
-    return $firebaseArray(ref);
-  }
-])
-.controller('profesoresCtrl', ['$scope', '$stateParams', '$ionicModal', 'profesores', 'Auth', '$cordovaToast',// The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
-// You can include any angular dependencies as parameters for this function
-// TIP: Access Route Parameters for your page via $stateParams.parameterName
+.controller('profesoresCtrl', ['$scope', '$stateParams', '$ionicModal', 'profesores', 'Auth', '$cordovaToast',
 function ($scope, $stateParams, $ionicModal, profesores, Auth, $cordovaToast) {
     $scope.profesores = profesores;
     $ionicModal.fromTemplateUrl('nuevoProfesor.html', {
@@ -170,7 +160,7 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth, $cordovaToast) {
       $scope.modal.hide();
       $scope.form = {
         'nombre':'',
-        'edad':0,
+        'fecha': new Date(),
         'telefono':0,
         'email':'',
         'uid_fire':'',
@@ -179,7 +169,7 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth, $cordovaToast) {
     };
     $scope.form = {
       'nombre':'',
-      'edad':0,
+      'fecha': new Date(),
       'telefono':0,
       'email':'',
       'uid_fire':'',
@@ -189,8 +179,8 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth, $cordovaToast) {
       $scope.message = null;
       // Create a new user
       console.log($scope.helper.password);
-      var helper = $scope.form;
-      Auth.$createUserWithEmailAndPassword(helper.email, $scope.helper.password)
+      var helperSend = $scope.form;
+      Auth.$createUserWithEmailAndPassword(helperSend.email, $scope.helper.password)
       .then(function(firebaseUser) {
         $scope.message = "User created with uid: " + firebaseUser.uid;
         $cordovaToast.showLongBottom('Se creó el profesor correctamente.').then(function(success) {
@@ -198,8 +188,9 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth, $cordovaToast) {
         }, function (error) {
           // error
         });
-        helper.uid_fire = firebaseUser.uid;
-        $scope.profesores.$add(helper);
+        helperSend.uid_fire = firebaseUser.uid;
+        helperSend.fecha = helperSend.fecha.toJSON();
+        $scope.profesores.$add(helperSend);
         $scope.closeModal();
         console.log($scope.message);
       }).catch(function(error) {
@@ -214,8 +205,8 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth, $cordovaToast) {
     };
 }])
 
-.controller('cuentaCtrl', ['$scope', 'Auth', 'profesores', '$state',
-function ($scope, Auth, profesores, $state) {
+.controller('cuentaCtrl', ['$scope', 'Auth', 'profesores', '$state', '$cordovaToast',
+function ($scope, Auth, profesores, $state, $cordovaToast) {
   $scope.profesores = profesores;
   $scope.firebaseUser= Auth.$getAuth();
   $scope.logMeOut = function(){
@@ -236,10 +227,8 @@ function ($scope, Auth, profesores, $state) {
   }
 }])
 
-.controller('entradasCtrl', ['$scope', '$stateParams', '$ionicModal', 'Auth', '$firebaseArray', 'profesores', // The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
-// You can include any angular dependencies as parameters for this function
-// TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores) {
+.controller('entradasCtrl', ['$scope', '$stateParams', '$ionicModal', 'Auth', '$firebaseArray', 'profesores', '$cordovaToast',
+function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores, $cordovaToast) {
     $scope.firebaseUser= Auth.$getAuth();
     var ref = firebase.database().ref().child('entradas/'+$stateParams.idAlumno);
     $scope.entradas = $firebaseArray(ref);
@@ -314,7 +303,7 @@ function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores) {
           // error
         });
       };
-      $scope.closeModal
+      $scope.closeModal();
     }
 }])
 
