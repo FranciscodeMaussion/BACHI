@@ -10,7 +10,6 @@
             </label>
             <ion-item class="item-avatar" style="" ng-repeat = "alumno in alumnos | filter :search track by $index ">
                 <h2>Nombre: {{alumno.nombre}}</h2>
-                <p>Fecha de Ingreso: {{alumno.entra| date:'dd/MM/yyyy'}}</p>
                 <p>Edad: {{alumno.edad}} años</p>
                 <p>Año: {{alumno.escolar}} grado/año</p>
                 <ion-option-button class="button-balanced" ng-click="goTo(alumno.$id)"><i class="button-icon icon ion-eye"></i></ion-option-button>
@@ -31,10 +30,6 @@
           <label class="item item-input item-floating-label">
               <span class="input-label">Nombre</span>
               <input placeholder="Nombre" type="text" ng-model="form.nombre">
-          </label>
-          <label class="item item-input item-floating-label">
-              <span class="input-label">Fecha de Ingreso</span>
-              <input placeholder="Fecha de Ingreso" type="date" ng-model="form.entra">
           </label>
           <label class="item item-input item-floating-label">
               <span class="input-label">Edad</span>

@@ -84,7 +84,6 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToas
       $scope.modal.hide();
       $scope.form = {
         'nombre':'',
-        'entra':new Date(),
         'edad':0,
         'escolar':0,
       };
@@ -97,7 +96,8 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToas
     $scope.editTo = function(idAlumno){
       console.log(idAlumno);
       var rec = $scope.alumnos.$getRecord(idAlumno);
-      $scope.form =rec;
+      rec.entra = new Date(rec.entra);
+      $scope.form = rec;
       $scope.mod = true;
       $scope.modal.show();
     };
@@ -119,22 +119,21 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToas
     $scope.mod = false;
     $scope.form = {
       'nombre':'',
-      'entra':new Date(),
       'edad':0,
       'escolar':0,
     };
     $scope.save = function(){
       if($scope.mod){
-        $scope.form.entra = $scope.form.entra.toJSON();
-        $scope.alumnos.$save($scope.form);
-        $cordovaToast.showLongBottom('Se modifico el alumno '+ $scope.form.nombre +' correctamente.').then(function(success) {
+        var helper = $scope.form
+        $scope.alumnos.$save(helper);
+        $cordovaToast.showLongBottom('Se modifico el alumno '+ helper.nombre +' correctamente.').then(function(success) {
           // success
         }, function (error) {
           // error
         });
       }else{
-        $scope.form.entra = $scope.form.entra.toJSON();
-        $scope.alumnos.$add($scope.form);
+        var helper = $scope.form
+        $scope.alumnos.$add(helper);
         $cordovaToast.showLongBottom('Se creó el alumno correctamente.').then(function(success) {
           // success
         }, function (error) {
@@ -153,10 +152,10 @@ function ($scope, $stateParams, $ionicModal, $state, Auth, alumnos, $cordovaToas
     return $firebaseArray(ref);
   }
 ])
-.controller('profesoresCtrl', ['$scope', '$stateParams', '$ionicModal', 'profesores', 'Auth',// The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
+.controller('profesoresCtrl', ['$scope', '$stateParams', '$ionicModal', 'profesores', 'Auth', '$cordovaToast',// The following is the constructor function for this page's controller. See https://docs.angularjs.org/guide/controller
 // You can include any angular dependencies as parameters for this function
 // TIP: Access Route Parameters for your page via $stateParams.parameterName
-function ($scope, $stateParams, $ionicModal, profesores, Auth) {
+function ($scope, $stateParams, $ionicModal, profesores, Auth, $cordovaToast) {
     $scope.profesores = profesores;
     $ionicModal.fromTemplateUrl('nuevoProfesor.html', {
       scope: $scope,
@@ -171,20 +170,18 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
       $scope.modal.hide();
       $scope.form = {
         'nombre':'',
-        'entra':new Date(),
         'edad':0,
         'telefono':0,
-        'email':'@gmail.com',
+        'email':'',
         'uid_fire':'',
       };
       $scope.helper = {'password':''};
     };
     $scope.form = {
       'nombre':'',
-      'entra':new Date(),
       'edad':0,
       'telefono':0,
-      'email':'@gmail.com',
+      'email':'',
       'uid_fire':'',
     };
     $scope.helper = {'password':''};
@@ -192,7 +189,8 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
       $scope.message = null;
       // Create a new user
       console.log($scope.helper.password);
-      Auth.$createUserWithEmailAndPassword($scope.form.email, $scope.helper.password)
+      var helper = $scope.form;
+      Auth.$createUserWithEmailAndPassword(helper.email, $scope.helper.password)
       .then(function(firebaseUser) {
         $scope.message = "User created with uid: " + firebaseUser.uid;
         $cordovaToast.showLongBottom('Se creó el profesor correctamente.').then(function(success) {
@@ -200,14 +198,17 @@ function ($scope, $stateParams, $ionicModal, profesores, Auth) {
         }, function (error) {
           // error
         });
-        $scope.form.uid_fire = firebaseUser.uid;
-        var helper = $scope.form;
-        helper.entra = $scope.form.entra.toJSON();
+        helper.uid_fire = firebaseUser.uid;
         $scope.profesores.$add(helper);
         $scope.closeModal();
         console.log($scope.message);
       }).catch(function(error) {
         $scope.message = error;
+        $cordovaToast.showLongBottom(error).then(function(success) {
+          // success
+        }, function (error) {
+          // error
+        });
         console.log($scope.message);
       });
     };
@@ -279,7 +280,8 @@ function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores) {
     };
     $scope.editTo = function(idEntrada){
       var rec = $scope.entradas.$getRecord(idEntrada);
-      $scope.form =rec;
+      rec.fecha = new Date(rec.fecha);
+      $scope.form = rec;
       $scope.mod = true;
       $scope.modal.show();
     };
@@ -292,18 +294,19 @@ function ($scope, $stateParams, $ionicModal, Auth, $firebaseArray, profesores) {
     $scope.mod = false;
     $scope.save = function(){
       if($scope.mod){
-        $scope.form.fecha = $scope.form.fecha.toJSON();
-        $scope.form.profesor = $scope.form.profesor.$id;
-        $scope.entradas.$save($scope.form);
+        var helper =  $scope.form;
+        helper.fecha = helper.fecha.toJSON();
+        helper.profesor = helper.profesor.$id;
+        $scope.entradas.$save(helper);
         $cordovaToast.showLongBottom('Se modifico la entrada.').then(function(success) {
           // success
         }, function (error) {
           // error
         });
       }else{
-        $scope.form.fecha = $scope.form.fecha.toJSON();
         var sentHelper = $scope.form;
-        sentHelper.profesor = $scope.form.profesor.$id;
+        sentHelper.fecha = sentHelper.fecha.toJSON();
+        sentHelper.profesor = sentHelper.profesor.$id;
         $scope.entradas.$add(sentHelper);
         $cordovaToast.showLongBottom('Se creó la entrada correctamente.').then(function(success) {
           // success

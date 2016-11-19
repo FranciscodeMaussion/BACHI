@@ -10,7 +10,6 @@
             </label>
             <ion-item ng-repeat = "profesor in profesores | filter :search track by $index ">
                 <h2>{{profesor.nombre}}</h2>
-                <p>Fecha de Ingreso: {{profesor.entra| date:'dd/MM/yyyy'}}</p>
                 <p>Edad: {{profesor.edad}} años</p>
                 <p>Teléfono: {{profesor.telefono}}</p>
                 <p>Email: {{profesor.email}}</p>
@@ -29,10 +28,6 @@
           <label class="item item-input item-floating-label">
               <span class="input-label">Nombre</span>
               <input placeholder="Nombre" type="text" ng-model="form.nombre">
-          </label>
-          <label class="item item-input item-floating-label">
-              <span class="input-label">Fecha de Ingreso</span>
-              <input placeholder="Fecha de Ingreso" type="date" ng-model="form.entra">
           </label>
           <label class="item item-input item-floating-label">
               <span class="input-label">Edad</span>
